@@ -434,6 +434,7 @@ dependencies = [
  "num_enum",
  "once_cell",
  "paste",
+ "phf",
  "pollster",
  "portable-atomic",
  "rand",

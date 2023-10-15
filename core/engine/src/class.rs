@@ -64,7 +64,7 @@
 //!     /// This is where the class object is initialized.
 //!     fn init(class: &mut ClassBuilder) -> JsResult<()> {
 //!         class.method(
-//!             js_string!("speak"),
+//!             "speak",
 //!             0,
 //!             NativeFunction::from_fn_ptr(|this, _args, _ctx| {
 //!                 if let Some(object) = this.as_object() {

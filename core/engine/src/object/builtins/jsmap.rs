@@ -4,12 +4,12 @@ use crate::{
     builtins::Map,
     error::JsNativeError,
     object::{JsFunction, JsMapIterator, JsObject, JsObjectType},
-    string::utf16,
     value::TryFromJs,
     Context, JsResult, JsValue,
 };
 
 use boa_gc::{Finalize, Trace};
+use boa_macros::js_str;
 use std::ops::Deref;
 
 /// `JsMap` provides a wrapper for Boa's implementation of the ECMAScript `Map` object.
@@ -30,8 +30,8 @@ use std::ops::Deref;
 /// let map = JsMap::new(context);
 ///
 /// // Set key-value pairs for the `JsMap`.
-/// map.set(js_string!("Key-1"), js_string!("Value-1"), context)?;
-/// map.set(js_string!("Key-2"), 10, context)?;
+/// map.set("Key-1", "Value-1", context)?;
+/// map.set("Key-2", 10, context)?;
 ///
 /// assert_eq!(map.get_size(context)?, 2.into());
 /// # Ok(())
@@ -53,8 +53,8 @@ use std::ops::Deref;
 ///
 /// // Create a `[key, value]` pair of JsValues
 /// let vec_one: Vec<JsValue> = vec![
-///     js_string!("first-key").into(),
-///     js_string!("first-value").into()
+///     "first-key".into(),
+///     "first-value".into()
 /// ];
 ///
 /// // We create an push our `[key, value]` pair onto our array as a `JsArray`
@@ -64,8 +64,8 @@ use std::ops::Deref;
 /// let js_iterable_map = JsMap::from_js_iterable(&js_array.into(), context)?;
 ///
 /// assert_eq!(
-///     js_iterable_map.get(js_string!("first-key"), context)?,
-///     js_string!("first-value").into()
+///     js_iterable_map.get("first-key", context)?,
+///     "first-value".into()
 /// );
 ///
 /// # Ok(())
@@ -112,8 +112,8 @@ impl JsMap {
     ///
     /// // Create a `[key, value]` pair of JsValues and add it to the `JsArray` as a `JsArray`
     /// let vec_one: Vec<JsValue> = vec![
-    ///     js_string!("first-key").into(),
-    ///     js_string!("first-value").into()
+    ///     "first-key".into(),
+    ///     "first-value".into()
     /// ];
     /// js_array.push(JsArray::from_iter(vec_one, context), context)?;
     ///
@@ -129,7 +129,7 @@ impl JsMap {
 
         // Let adder be Get(map, "set") per spec. This action should not fail with default map.
         let adder = map
-            .get(utf16!("set"), context)
+            .get(js_str!("set"), context)
             .expect("creating a map with the default prototype must not fail");
 
         let _completion_record = add_entries_from_iterable(&map, iterable, &adder, context)?;
@@ -229,12 +229,12 @@ impl JsMap {
     /// # let context = &mut Context::default();
     /// let js_map = JsMap::new(context);
     ///
-    /// js_map.set(js_string!("foo"), js_string!("bar"), context)?;
+    /// js_map.set("foo", "bar", context)?;
     /// js_map.set(2, 4, context)?;
     ///
     /// assert_eq!(
-    ///     js_map.get(js_string!("foo"), context)?,
-    ///     js_string!("bar").into()
+    ///     js_map.get("foo", context)?,
+    ///     "bar".into()
     /// );
     /// assert_eq!(js_map.get(2, context)?, 4.into());
     /// # Ok(())
@@ -265,7 +265,7 @@ impl JsMap {
     /// # let context = &mut Context::default();
     /// let js_map = JsMap::new(context);
     ///
-    /// js_map.set(js_string!("foo"), js_string!("bar"), context)?;
+    /// js_map.set("foo", "bar", context)?;
     ///
     /// let map_size = js_map.get_size(context)?;
     ///
@@ -290,14 +290,14 @@ impl JsMap {
     /// # fn main() -> JsResult<()> {
     /// # let context = &mut Context::default();
     /// let js_map = JsMap::new(context);
-    /// js_map.set(js_string!("foo"), js_string!("bar"), context)?;
-    /// js_map.set(js_string!("hello"), js_string!("world"), context)?;
+    /// js_map.set("foo", "bar", context)?;
+    /// js_map.set("hello", "world", context)?;
     ///
-    /// js_map.delete(js_string!("foo"), context)?;
+    /// js_map.delete("foo", context)?;
     ///
     /// assert_eq!(js_map.get_size(context)?, 1.into());
     /// assert_eq!(
-    ///     js_map.get(js_string!("foo"), context)?,
+    ///     js_map.get("foo", context)?,
     ///     JsValue::undefined()
     /// );
     /// # Ok(())
@@ -322,11 +322,11 @@ impl JsMap {
     /// # fn main() -> JsResult<()> {
     /// # let context = &mut Context::default();
     /// let js_map = JsMap::new(context);
-    /// js_map.set(js_string!("foo"), js_string!("bar"), context)?;
+    /// js_map.set("foo", "bar", context)?;
     ///
-    /// let retrieved_value = js_map.get(js_string!("foo"), context)?;
+    /// let retrieved_value = js_map.get("foo", context)?;
     ///
-    /// assert_eq!(retrieved_value, js_string!("bar").into());
+    /// assert_eq!(retrieved_value, "bar".into());
     /// # Ok(())
     /// # }
     /// ```
@@ -349,8 +349,8 @@ impl JsMap {
     /// # fn main() -> JsResult<()> {
     /// # let context = &mut Context::default();
     /// let js_map = JsMap::new(context);
-    /// js_map.set(js_string!("foo"), js_string!("bar"), context)?;
-    /// js_map.set(js_string!("hello"), js_string!("world"), context)?;
+    /// js_map.set("foo", "bar", context)?;
+    /// js_map.set("hello", "world", context)?;
     ///
     /// js_map.clear(context)?;
     ///
@@ -375,9 +375,9 @@ impl JsMap {
     /// # fn main() -> JsResult<()> {
     /// # let context = &mut Context::default();
     /// let js_map = JsMap::new(context);
-    /// js_map.set(js_string!("foo"), js_string!("bar"), context)?;
+    /// js_map.set("foo", "bar", context)?;
     ///
-    /// let has_key = js_map.has(js_string!("foo"), context)?;
+    /// let has_key = js_map.has("foo", context)?;
     ///
     /// assert_eq!(has_key, true.into());
     /// # Ok(())

@@ -1,4 +1,4 @@
-use boa_macros::utf16;
+use boa_macros::js_str;
 
 use crate::{
     js_string,
@@ -106,7 +106,7 @@ impl<S: ApplyToObject + IsConstructor> ApplyToObject for Callable<S> {
             function.realm = Some(self.realm);
         }
         object.insert(
-            utf16!("length"),
+            js_str!("length"),
             PropertyDescriptor::builder()
                 .value(self.length)
                 .writable(false)
@@ -114,7 +114,7 @@ impl<S: ApplyToObject + IsConstructor> ApplyToObject for Callable<S> {
                 .configurable(true),
         );
         object.insert(
-            utf16!("name"),
+            js_str!("name"),
             PropertyDescriptor::builder()
                 .value(self.name)
                 .writable(false)
@@ -362,8 +362,8 @@ impl BuiltInConstructorWithPrototype<'_> {
         let length = self.length;
         let name = self.name.clone();
         let prototype = self.prototype.clone();
-        self = self.static_property(js_string!("length"), length, Attribute::CONFIGURABLE);
-        self = self.static_property(js_string!("name"), name, Attribute::CONFIGURABLE);
+        self = self.static_property(js_str!("length"), length, Attribute::CONFIGURABLE);
+        self = self.static_property(js_str!("name"), name, Attribute::CONFIGURABLE);
         self = self.static_property(PROTOTYPE, prototype, Attribute::empty());
 
         let attributes = self.attributes;
@@ -410,8 +410,8 @@ impl BuiltInConstructorWithPrototype<'_> {
     pub(crate) fn build_without_prototype(mut self) {
         let length = self.length;
         let name = self.name.clone();
-        self = self.static_property(js_string!("length"), length, Attribute::CONFIGURABLE);
-        self = self.static_property(js_string!("name"), name, Attribute::CONFIGURABLE);
+        self = self.static_property(js_str!("length"), length, Attribute::CONFIGURABLE);
+        self = self.static_property(js_str!("name"), name, Attribute::CONFIGURABLE);
 
         let mut object = self.object.borrow_mut();
         let function = object
@@ -482,7 +482,7 @@ impl<'ctx> BuiltInBuilder<'ctx, OrdinaryObject> {
             realm,
             function,
             length: 0,
-            name: js_string!(""),
+            name: js_string!(),
         }
     }
 
@@ -495,7 +495,7 @@ impl<'ctx> BuiltInBuilder<'ctx, OrdinaryObject> {
             object: I::get(realm.intrinsics()),
             kind: Callable {
                 function,
-                name: js_string!(""),
+                name: js_string!(),
                 length: 0,
                 kind: OrdinaryFunction,
                 realm: realm.clone(),
@@ -514,7 +514,7 @@ impl<'ctx> BuiltInBuilder<'ctx, OrdinaryObject> {
             object,
             kind: Callable {
                 function,
-                name: js_string!(""),
+                name: js_string!(),
                 length: 0,
                 kind: OrdinaryFunction,
                 realm: realm.clone(),
