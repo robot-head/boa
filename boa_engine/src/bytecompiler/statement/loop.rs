@@ -42,15 +42,14 @@ impl ByteCompiler<'_, '_> {
                                 .create_immutable_binding(*name, true);
                         }
                     } else {
-                        let mut indices = Vec::new();
+                        let mut bindings = Vec::new();
                         for name in &names {
                             let binding = self
                                 .lexical_environment
                                 .create_mutable_binding(*name, false);
-                            let index = self.get_or_insert_binding(binding);
-                            indices.push(index);
+                            bindings.push(binding);
                         }
-                        let_binding_indices = Some((indices, env_index));
+                        let_binding_indices = Some((bindings, env_index));
                     }
                     self.compile_lexical_decl(decl);
                 }
@@ -69,15 +68,22 @@ impl ByteCompiler<'_, '_> {
             .set_start_address(start_address);
 
         if let Some((let_binding_indices, env_index)) = &let_binding_indices {
-            for index in let_binding_indices {
-                self.emit_with_varying_operand(Opcode::GetName, *index);
+            for binding in let_binding_indices {
+                let index = self.get_or_insert_binding(*binding);
+                self.emit_with_varying_operand(Opcode::GetName, index);
             }
 
             self.emit_opcode(Opcode::PopEnvironment);
             self.emit_with_varying_operand(Opcode::PushDeclarativeEnvironment, *env_index);
 
-            for index in let_binding_indices.iter().rev() {
-                self.emit_with_varying_operand(Opcode::PutLexicalValue, *index);
+            for binding in let_binding_indices.iter().rev() {
+                self.emit(
+                    Opcode::PutLexicalValue,
+                    &[
+                        Operand::Varying(binding.environment_index()),
+                        Operand::Varying(binding.binding_index()),
+                    ],
+                );
             }
         }
 

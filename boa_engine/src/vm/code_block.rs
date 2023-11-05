@@ -442,9 +442,14 @@ impl CodeBlock {
                     self.constant_function(index).length
                 )
             }
+            Instruction::PutLexicalValue {
+                environment_index,
+                binding_index,
+            } => {
+                format!("{}: {}", environment_index.value(), binding_index.value(),)
+            }
             Instruction::DefVar { index }
             | Instruction::DefInitVar { index }
-            | Instruction::PutLexicalValue { index }
             | Instruction::GetName { index }
             | Instruction::GetLocator { index }
             | Instruction::GetNameAndLocator { index }

@@ -108,14 +108,16 @@ pub(crate) struct PutLexicalValue;
 
 impl PutLexicalValue {
     #[allow(clippy::unnecessary_wraps)]
-    fn operation(context: &mut Context<'_>, index: usize) -> JsResult<CompletionType> {
+    fn operation(
+        context: &mut Context<'_>,
+        environment_index: u32,
+        binding_index: u32,
+    ) -> JsResult<CompletionType> {
         let value = context.vm.pop();
-        let binding_locator = context.vm.frame().code_block.bindings[index];
-        context.vm.environments.put_lexical_value(
-            binding_locator.environment_index(),
-            binding_locator.binding_index(),
-            value,
-        );
+        context
+            .vm
+            .environments
+            .put_lexical_value(environment_index, binding_index, value);
 
         Ok(CompletionType::Normal)
     }
@@ -127,18 +129,21 @@ impl Operation for PutLexicalValue {
     const COST: u8 = 3;
 
     fn execute(context: &mut Context<'_>) -> JsResult<CompletionType> {
-        let index = context.vm.read::<u8>();
-        Self::operation(context, index as usize)
+        let environment_index = u32::from(context.vm.read::<u8>());
+        let binding_index = u32::from(context.vm.read::<u8>());
+        Self::operation(context, environment_index, binding_index)
     }
 
     fn execute_with_u16_operands(context: &mut Context<'_>) -> JsResult<CompletionType> {
-        let index = context.vm.read::<u16>() as usize;
-        Self::operation(context, index)
+        let environment_index = u32::from(context.vm.read::<u16>());
+        let binding_index = u32::from(context.vm.read::<u16>());
+        Self::operation(context, environment_index, binding_index)
     }
 
     fn execute_with_u32_operands(context: &mut Context<'_>) -> JsResult<CompletionType> {
-        let index = context.vm.read::<u32>();
-        Self::operation(context, index as usize)
+        let environment_index = context.vm.read::<u32>();
+        let binding_index = context.vm.read::<u32>();
+        Self::operation(context, environment_index, binding_index)
     }
 }
 

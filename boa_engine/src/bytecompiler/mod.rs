@@ -425,8 +425,13 @@ impl<'ctx, 'host> ByteCompiler<'ctx, 'host> {
             },
             BindingOpcode::InitLexical => {
                 let binding = self.lexical_environment.get_identifier_reference(name);
-                let index = self.get_or_insert_binding(binding.locator());
-                self.emit_with_varying_operand(Opcode::PutLexicalValue, index);
+                self.emit(
+                    Opcode::PutLexicalValue,
+                    &[
+                        Operand::Varying(binding.locator().environment_index()),
+                        Operand::Varying(binding.locator().binding_index()),
+                    ],
+                );
             }
             BindingOpcode::SetName => match self.lexical_environment.set_mutable_binding(name) {
                 Ok(binding) => {

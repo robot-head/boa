@@ -1081,10 +1081,10 @@ generate_opcodes! {
 
     /// Initialize a lexical binding.
     ///
-    /// Operands: index: `u32`
+    /// Operands: environment_index: `VaryingOperand`, binding_index: `VaryingOperand`
     ///
     /// Stack: value **=>**
-    PutLexicalValue { index: VaryingOperand },
+    PutLexicalValue { environment_index: VaryingOperand, binding_index: VaryingOperand },
 
     /// Throws an error because the binding access is illegal.
     ///
