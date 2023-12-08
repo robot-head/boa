@@ -35,6 +35,8 @@ use trace::VmTrace;
 #[allow(unused_imports)]
 pub(crate) use opcode::{Instruction, InstructionIterator, Opcode, VaryingOperandKind};
 pub use runtime_limits::RuntimeLimits;
+
+use self::trace::TraceAction;
 pub use {
     call_frame::{CallFrame, GeneratorResumeKind},
     code_block::CodeBlock,
@@ -179,6 +181,9 @@ impl Vm {
         }
 
         self.frames.push(frame);
+
+        #[cfg(feature = "trace")]
+        self.trace.trace_call_frame(self);
     }
 
     pub(crate) fn push_frame_with_stack(
@@ -191,6 +196,9 @@ impl Vm {
         self.push(function);
 
         self.push_frame(frame);
+
+        #[cfg(feature = "trace")]
+        self.trace.trace_call_frame(self);
     }
 
     pub(crate) fn pop_frame(&mut self) -> Option<CallFrame> {
@@ -382,10 +390,10 @@ impl Context {
         }
 
         #[cfg(feature = "trace")]
-        let result = if self.vm.trace.should_trace() {
-            self.trace_execute_instruction(f)
-        } else {
+        let result = if self.vm.trace.should_trace(&self.vm) == TraceAction::None {
             self.execute_instruction(f)
+        } else {
+            self.trace_execute_instruction(f)
         };
 
         #[cfg(not(feature = "trace"))]
@@ -513,9 +521,6 @@ impl Context {
     pub(crate) async fn run_async_with_budget(&mut self, budget: u32) -> CompletionRecord {
         let _timer = Profiler::global().start_event("run_async_with_budget", "vm");
 
-        #[cfg(feature = "trace")]
-        self.vm.trace.trace_call_frame(&self.vm);
-
         let mut runtime_budget: u32 = budget;
 
         loop {
@@ -535,9 +540,6 @@ impl Context {
 
     pub(crate) fn run(&mut self) -> CompletionRecord {
         let _timer = Profiler::global().start_event("run", "vm");
-
-        #[cfg(feature = "trace")]
-        self.vm.trace.trace_call_frame(&self.vm);
 
         loop {
             match self.execute_one(Opcode::execute) {
