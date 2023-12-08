@@ -29,14 +29,13 @@ mod runtime_limits;
 pub mod flowgraph;
 
 #[cfg(feature = "trace")]
-use trace::VmTrace;
+use trace::{VmTrace, TraceAction};
 
 // TODO: see if this can be exposed on all features.
 #[allow(unused_imports)]
 pub(crate) use opcode::{Instruction, InstructionIterator, Opcode, VaryingOperandKind};
 pub use runtime_limits::RuntimeLimits;
 
-use self::trace::TraceAction;
 pub use {
     call_frame::{CallFrame, GeneratorResumeKind},
     code_block::CodeBlock,
