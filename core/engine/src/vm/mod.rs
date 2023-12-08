@@ -50,9 +50,6 @@ pub(crate) use {
     opcode::BindingOpcode,
 };
 
-#[cfg(feature = "trace")]
-pub(crate) use code_block::TraceFlags;
-
 #[cfg(test)]
 mod tests;
 
