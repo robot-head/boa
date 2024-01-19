@@ -9,6 +9,7 @@
 use boa_engine::{Context, Source, vm::trace::Tracer};
 use getrandom as _;
 use wasm_bindgen::prelude::*;
+use std::fmt;
 
 #[wasm_bindgen(start)]
 fn main() {
@@ -163,6 +164,12 @@ pub(crate) struct WasmTracer {
     trace_handler: Option<ProvidedFunction>,
 }
 
+impl fmt::Debug for WasmTracer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "WasmTracer")
+    }
+}
+
 impl WasmTracer {
     fn set_compiled_handler(&mut self, compiled_handler: Box<dyn Fn(&str)>) {
         self.compiled_handler = Some(compiled_handler);
@@ -196,9 +203,5 @@ impl Tracer for WasmTracer {
         if let Some(action) = &self.trace_handler {
             action(msg);
         }
-    }
-
-    fn name(&self) -> &str {
-        "WASM Debugger Trace"
     }
 }
